@@ -1,19 +1,18 @@
 package com.upb.okrbackend.models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+
 
 import java.util.Date;
 import java.util.List;
-@Entity
+
 public class User {
-    @Id
-    private Long id;
+
+    private String id;
     private String name;
     private String password;
     private String email;
-    //private List<Objective> userObjectives;
-    private String creationDate;
+    private List<Objective> objectiveList;
+    private Date creationdate;
 
     public String getName() {
         return name;
@@ -39,27 +38,27 @@ public class User {
         this.email = email;
     }
 
-//    public List<Objective> getUserObjectives() {
-//        return userObjectives;
-//    }
-//
-//    public void setUserObjectives(List<Objective> userObjectives) {
-//        this.userObjectives = userObjectives;
-//    }
-
-    public String getCreationDate() {
-        return creationDate;
+    public Date getCreationdate() {
+        return creationdate;
     }
 
-    public void setCreationDate(String creationDate) {
-        this.creationDate = creationDate;
+    public void setCreationdate(Date creationdate) {
+        this.creationdate = creationdate;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
+    }
+
+    public List<Objective> getObjectiveList() {
+        return objectiveList;
+    }
+
+    public void setObjectiveList(List<Objective> objectiveList) {
+        this.objectiveList = objectiveList;
     }
 }

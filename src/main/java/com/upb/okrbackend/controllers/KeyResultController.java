@@ -1,25 +1,40 @@
 package com.upb.okrbackend.controllers;
 
+
 import com.upb.okrbackend.models.KeyResult;
-import com.upb.okrbackend.repositories.KeyResultRepository;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.upb.okrbackend.models.User;
+import com.upb.okrbackend.service.KeyResultService;
+import com.upb.okrbackend.service.ObjectiveService;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
-import java.util.Collection;
+import java.util.concurrent.ExecutionException;
 
-@RequestMapping("/api/keyResult")
+
+@RequestMapping("/api/KeyResult")
 @RestController
 @EnableWebMvc
 public class KeyResultController {
-    final KeyResultRepository keyResultRepository;
+    private KeyResultService keyResultService;
 
-    public KeyResultController(KeyResultRepository keyResultRepository) {
-        this.keyResultRepository = keyResultRepository;
+    public KeyResultController(KeyResultService keyResultService){
+        this.keyResultService = keyResultService;
     }
     @GetMapping(value = "/get")
-    public Collection<KeyResult> getAllKeyResult() {
-        return keyResultRepository.findAll();
+    public KeyResult getKeyResult(@RequestParam String id) throws ExecutionException, InterruptedException {
+        return keyResultService.getKeyResult(id);
     }
+    @PostMapping(value = "/create")
+    public String createKeyResult(@RequestBody KeyResult keyResult) throws ExecutionException, InterruptedException {
+        return keyResultService.createKeyResult(keyResult);
+    }
+    @PutMapping(value = "/update")
+    public String updateKeyResult(@RequestParam KeyResult keyResult) throws ExecutionException, InterruptedException {
+        return keyResultService.updateKeyResult(keyResult);
+    }
+    @PutMapping(value = "/delete")
+    public String deleteKeyResult(@RequestParam String id) throws ExecutionException, InterruptedException {
+        return keyResultService.deleteKeyResult(id);
+    }
+
 }

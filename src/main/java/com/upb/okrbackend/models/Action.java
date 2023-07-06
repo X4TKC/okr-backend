@@ -1,19 +1,15 @@
 package com.upb.okrbackend.models;
 
-
 import com.google.cloud.firestore.DocumentReference;
 
 import java.util.List;
 
-public class KeyResult {
+public class Action {
     private String id;
     private String description;
-    private String objectiveId;
-    private List<Action> actionList;
-
-
-
-    public KeyResult() {
+    private String keyId;
+    private List<Measurement> measurementList;
+    public Action() {
     }
 
     public String getId() {
@@ -32,19 +28,19 @@ public class KeyResult {
         this.description = description;
     }
 
-    public String getObjectiveId() {
-        return objectiveId;
+    public String getKeyId() {
+        return keyId;
     }
 
-    public void setObjectiveId(String objectiveId) {
-        this.objectiveId = objectiveId;
+    public void setKeyId(String keyId) {
+        this.keyId = keyId;
     }
 
-    public List<Action> getActionList() {
-        return actionList;
+    public List<Measurement> getMeasurementList() {
+        return measurementList;
     }
 
-    public void setActionList(List<Action> actionList) {
-        this.actionList = actionList;
+    public void setMeasurementList(List<Measurement> measurementList) {
+        this.measurementList = measurementList;
     }
 }
