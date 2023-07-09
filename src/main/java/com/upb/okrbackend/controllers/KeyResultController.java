@@ -29,11 +29,11 @@ public class KeyResultController {
         return keyResultService.createKeyResult(keyResult);
     }
     @PutMapping(value = "/update")
-    public String updateKeyResult(@RequestParam KeyResult keyResult) throws ExecutionException, InterruptedException {
+    public String updateKeyResult(@RequestBody KeyResult keyResult) throws ExecutionException, InterruptedException {
         return keyResultService.updateKeyResult(keyResult);
     }
     @PutMapping(value = "/delete")
-    public String deleteKeyResult(@RequestParam String id) throws ExecutionException, InterruptedException {
+    public String deleteKeyResult(@RequestParam String id) {
         return keyResultService.deleteKeyResult(id);
     }
 

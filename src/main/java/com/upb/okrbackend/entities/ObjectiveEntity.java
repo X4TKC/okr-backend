@@ -1,25 +1,24 @@
-package com.upb.okrbackend.models;
-
-
+package com.upb.okrbackend.entities;
 
 import com.google.cloud.Timestamp;
+import com.google.cloud.firestore.DocumentReference;
+import com.upb.okrbackend.models.KeyResult;
 
-import java.util.Date;
 import java.util.List;
-public class Objective {
 
+public class ObjectiveEntity {
     private String id;
     private String name;
-    private List<KeyResult> keyResultList;
+    private List<DocumentReference> keyResultList;
     private String dateStart;
     private String dateEnd;
     private String userId;
 
 
 
-    public Objective() {
+    public ObjectiveEntity() {
     }
-    public Objective(String id, String name, List<KeyResult> keyResultList, String dateStart, String dateEnd, String userId) {
+    public ObjectiveEntity(String id, String name, List<DocumentReference> keyResultList, String dateStart, String dateEnd, String userId) {
         this.id = id;
         this.name = name;
         this.keyResultList = keyResultList;
@@ -60,14 +59,13 @@ public class Objective {
         this.dateEnd = dateEnd;
     }
 
-    public List<KeyResult> getKeyResultList() {
+    public List<DocumentReference> getKeyResultList() {
         return keyResultList;
     }
 
-    public void setKeyResultList(List<KeyResult> keyResultList) {
+    public void setKeyResultList(List<DocumentReference> keyResultList) {
         this.keyResultList = keyResultList;
     }
-
 
     public String getUserId() {
         return userId;

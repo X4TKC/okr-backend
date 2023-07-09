@@ -4,15 +4,14 @@ import com.google.api.core.ApiFuture;
 import com.google.cloud.Timestamp;
 import com.google.cloud.firestore.*;
 import com.google.firebase.cloud.FirestoreClient;
+import com.upb.okrbackend.entities.ObjectiveEntity;
+import com.upb.okrbackend.entities.UserEntity;
 import com.upb.okrbackend.models.KeyResult;
 import com.upb.okrbackend.models.Objective;
 import com.upb.okrbackend.models.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
@@ -23,20 +22,31 @@ public class ObjectiveService {
     @Autowired
     private KeyResultService keyResultService;
 
+
+    private final String collection="Objective";
+
     public ObjectiveService() {
         this.dbFirestore = FirestoreClient.getFirestore();
-        this.keyResultService = new KeyResultService(dbFirestore);
+
+        this.keyResultService = new KeyResultService(this.dbFirestore);
+
+    }
+    public ObjectiveService(Firestore dbFirestore) {
+        this.dbFirestore = dbFirestore;
+        this.keyResultService = new KeyResultService(this.dbFirestore);
+
     }
 
     public Objective getObjective(String id) throws ExecutionException, InterruptedException {
-        dbFirestore = FirestoreClient.getFirestore();
-        DocumentReference documentReference = dbFirestore.collection("Objective").document(id);
+        DocumentReference documentReference = dbFirestore.collection(collection).document(id);
         DocumentSnapshot document = documentReference.get().get();
         Objective objective = new Objective();
         if(document.exists()){
             List<KeyResult> keyResultList = keyResultService.getKeyResultListById(document);
             objective.setId(document.getId());
-            objective.setDate((Timestamp) document.getData().get("date"));
+            objective.setUserId(document.getData().get("userId").toString());
+            objective.setDateStart(Objects.requireNonNull(document.getData()).get("dateStart").toString());
+            objective.setDateEnd(document.getData().get("dateEnd").toString());
             objective.setName(document.getData().get("name").toString());
             objective.setKeyResultList(keyResultList);
             return objective;
@@ -44,20 +54,65 @@ public class ObjectiveService {
         return null;
     }
 
-    public String createObjective(Objective objective) throws ExecutionException, InterruptedException {
-        dbFirestore = FirestoreClient.getFirestore();
-        ApiFuture<WriteResult> collectionApiFuture = dbFirestore.collection("Objective").document(objective.getName()).set(objective);
+    public String createObjective(ObjectiveEntity objective) throws ExecutionException, InterruptedException {
+//        Timestamp startDate=Timestamp.parseTimestamp(objective.getDateStart());
+//        Timestamp endDate=Timestamp.parseTimestamp(objective.getDateEnd());
+        DocumentReference documentReference = dbFirestore.collection(collection).document(objective.getId());
+        DocumentSnapshot document = documentReference.get().get();
+        List<KeyResult> keyResultList= keyResultService.getKeyResultListById(document);
+        Objective objectiveVar = new Objective(objective.getId(),objective.getName(),keyResultList,objective.getDateStart(),objective.getDateEnd(),objective.getUserId());
+        addObjectiveToUser(objective.getId(), objective.getUserId());
+        ApiFuture<WriteResult> collectionApiFuture = dbFirestore.collection("Objective").document(objectiveVar.getId()).set(objectiveVar);
         return collectionApiFuture.get().getUpdateTime().toString();
     }
 
-    public String updateObjective(Objective objective) throws ExecutionException, InterruptedException {
-        ApiFuture<WriteResult> collectionApiFuture = dbFirestore.collection("Objective").document(objective.getName()).set(objective);
+    public String updateObjective(ObjectiveEntity objective) throws ExecutionException, InterruptedException {
+//        Timestamp startDate=Timestamp.parseTimestamp(objective.getDateStart());
+//        Timestamp endDate=Timestamp.parseTimestamp(objective.getDateEnd());
+        DocumentReference documentReference = dbFirestore.collection(collection).document(objective.getId());
+        DocumentSnapshot document = documentReference.get().get();
+        List<KeyResult> keyResultList= keyResultService.getKeyResultListById(document);
+        Objective objectiveVar = new Objective(objective.getId(),objective.getName(),keyResultList,objective.getDateStart(),objective.getDateEnd(),objective.getUserId());
+        ApiFuture<WriteResult> collectionApiFuture = dbFirestore.collection(collection).document(objectiveVar.getId()).set(objectiveVar);
         return collectionApiFuture.get().getUpdateTime().toString();
     }
+
+
 
     public String deleteObjective(String id) {
-        dbFirestore = FirestoreClient.getFirestore();
-        ApiFuture<WriteResult> writeResult = dbFirestore.collection("Objective").document(id).delete();
+        ApiFuture<WriteResult> writeResult = dbFirestore.collection(collection).document(id).delete();
         return "Successfully deleted " + id;
+    }
+
+    public List<Objective> getObjectiveListById(DocumentSnapshot document) throws ExecutionException, InterruptedException {
+        List<DocumentReference> documentReferenceObjective = (List<DocumentReference>) document.getData().get("objectiveList");
+        Objective objectiveVar;
+        List<Objective> objectiveList = new ArrayList<>();
+        for (DocumentReference documentReferenceVar : documentReferenceObjective
+        ) {
+            DocumentSnapshot  objective = dbFirestore.collection(collection).document(documentReferenceVar.getId()).get().get();
+            objectiveVar = new Objective();
+            objectiveVar.setId(objective.getId());
+            objectiveVar.setName(Objects.requireNonNull(objective.getData()).get("name").toString());
+            objectiveVar.setDateStart(objective.getData().get("dateStart").toString());
+            objectiveVar.setDateEnd(objective.getData().get("dateEnd").toString());
+            objectiveVar.setUserId(objective.getData().get("userId").toString());
+            objectiveVar.setKeyResultList(keyResultService.getKeyResultListById(objective));
+            objectiveList.add(objectiveVar);
+        }
+        return objectiveList;
+    }
+    public void addObjectiveToUser(String id, String userId) throws ExecutionException, InterruptedException {
+        DocumentSnapshot documentSnapshotUser = dbFirestore.collection("User").document(userId).get().get();
+        List<DocumentReference> documentReferenceListUser = (List<DocumentReference>) documentSnapshotUser.getData().get("objectiveList");
+        documentReferenceListUser.add(dbFirestore.collection(collection).document(id));
+        UserEntity userEntity = new UserEntity();
+        userEntity.setObjectiveList(documentReferenceListUser);
+        userEntity.setId(documentSnapshotUser.getId());
+        userEntity.setEmail(documentSnapshotUser.getData().get("email").toString());
+        userEntity.setPassword(documentSnapshotUser.getData().get("password").toString());
+        userEntity.setCreationdate(documentSnapshotUser.getCreateTime());
+        userEntity.setName(documentSnapshotUser.getData().get("name").toString());
+        dbFirestore.collection("User").document(userEntity.getId()).set(userEntity);
     }
 }

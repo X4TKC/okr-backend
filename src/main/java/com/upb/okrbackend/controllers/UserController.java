@@ -1,6 +1,7 @@
 package com.upb.okrbackend.controllers;
 
 
+
 import com.upb.okrbackend.models.User;
 import com.upb.okrbackend.service.UserService;
 import org.springframework.web.bind.annotation.*;
@@ -25,11 +26,11 @@ public class UserController {
         return userService.createUser(user);
     }
     @PutMapping(value = "/update")
-    public String updateUser(@RequestParam User user) throws ExecutionException, InterruptedException {
+    public String updateUser(@RequestBody User user) throws ExecutionException, InterruptedException {
         return userService.updateUser(user);
     }
     @PutMapping(value = "/delete")
-    public String deleteUser(@RequestParam String id) throws ExecutionException, InterruptedException {
+    public String deleteUser(@RequestParam String id) {
         return userService.deleteUser(id);
     }
 }

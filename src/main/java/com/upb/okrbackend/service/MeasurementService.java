@@ -1,15 +1,13 @@
 package com.upb.okrbackend.service;
 
 import com.google.api.core.ApiFuture;
+import com.google.cloud.Timestamp;
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.WriteResult;
 import com.google.firebase.cloud.FirestoreClient;
-import com.upb.okrbackend.models.Action;
-import com.upb.okrbackend.models.Measurement;
-import com.upb.okrbackend.models.Objective;
-import com.upb.okrbackend.models.User;
+import com.upb.okrbackend.models.*;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -32,9 +30,11 @@ public class MeasurementService {
         dbFirestore = FirestoreClient.getFirestore();
         DocumentReference documentReference = dbFirestore.collection("Measurement").document(id);
         DocumentSnapshot document = documentReference.get().get();
-        Measurement measurement;
+        Measurement measurement = new Measurement();
         if(document.exists()){
-            measurement = document.toObject(Measurement.class);
+            measurement.setId(document.getId());
+            measurement.setActionId(document.getData().get("actionId").toString());
+            measurement.setDescription(document.getData().get("description").toString());
             return measurement;
         }
         return null;
@@ -52,7 +52,6 @@ public class MeasurementService {
     }
 
     public String deleteMeasurement(String id) {
-        dbFirestore = FirestoreClient.getFirestore();
         ApiFuture<WriteResult> writeResult = dbFirestore.collection("Measurement").document(id).delete();
         return "Successfully deleted " + id;
     }

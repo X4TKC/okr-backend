@@ -13,7 +13,6 @@ import java.util.Objects;
 
 @SpringBootApplication
 public class OkrBackendApplication {
-
 	public static void main(String[] args) throws IOException {
 		ClassLoader classLoader = OkrBackendApplication.class.getClassLoader();
 		File file = new File(Objects.requireNonNull(classLoader.getResource("serviceAccountKey.json")).getFile());

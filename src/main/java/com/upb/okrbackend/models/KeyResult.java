@@ -9,12 +9,10 @@ public class KeyResult {
     private String id;
     private String description;
     private String objectiveId;
-    private List<Action> actionList;
+    private String action;
+    private String measurement;
 
 
-
-    public KeyResult() {
-    }
 
     public String getId() {
         return id;
@@ -40,11 +38,19 @@ public class KeyResult {
         this.objectiveId = objectiveId;
     }
 
-    public List<Action> getActionList() {
-        return actionList;
+    public String getAction() {
+        return action;
     }
 
-    public void setActionList(List<Action> actionList) {
-        this.actionList = actionList;
+    public void setAction(String action) {
+        this.action = action;
+    }
+
+    public String getMeasurement() {
+        return measurement;
+    }
+
+    public void setMeasurement(String measurement) {
+        this.measurement = measurement;
     }
 }

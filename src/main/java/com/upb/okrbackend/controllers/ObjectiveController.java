@@ -1,6 +1,7 @@
 package com.upb.okrbackend.controllers;
 
 
+import com.upb.okrbackend.entities.ObjectiveEntity;
 import com.upb.okrbackend.models.Objective;
 import com.upb.okrbackend.models.User;
 import com.upb.okrbackend.service.ObjectiveService;
@@ -24,15 +25,15 @@ public class ObjectiveController {
         return objectiveService.getObjective(id);
     }
     @PostMapping(value = "/create")
-    public String createObjective(@RequestBody Objective objective) throws ExecutionException, InterruptedException {
+    public String createObjective(@RequestBody ObjectiveEntity objective) throws ExecutionException, InterruptedException {
         return objectiveService.createObjective(objective);
     }
     @PutMapping(value = "/update")
-    public String updateObjective(@RequestParam Objective objective) throws ExecutionException, InterruptedException {
+    public String updateObjective(@RequestBody ObjectiveEntity objective) throws ExecutionException, InterruptedException {
         return objectiveService.updateObjective(objective);
     }
     @PutMapping(value = "/delete")
-    public String deleteObjective(@RequestParam String id) throws ExecutionException, InterruptedException {
+    public String deleteObjective(@RequestParam String id) {
         return objectiveService.deleteObjective(id);
     }
 

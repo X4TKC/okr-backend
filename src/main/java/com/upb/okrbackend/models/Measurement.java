@@ -9,8 +9,6 @@ public class Measurement {
 
     private String actionId;
 
-    public Measurement() {
-    }
 
     public String getId() {
         return id;

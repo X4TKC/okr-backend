@@ -9,8 +9,6 @@ public class Action {
     private String description;
     private String keyId;
     private List<Measurement> measurementList;
-    public Action() {
-    }
 
     public String getId() {
         return id;

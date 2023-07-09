@@ -26,11 +26,11 @@ public class MeasurementController {
         return measurementService.createMeasurement(measurement);
     }
     @PutMapping(value = "/update")
-    public String updateMeasurement(@RequestParam Measurement measurement) throws ExecutionException, InterruptedException {
+    public String updateMeasurement(@RequestBody Measurement measurement) throws ExecutionException, InterruptedException {
         return measurementService.updateMeasurement(measurement);
     }
     @PutMapping(value = "/delete")
-    public String deleteMeasurement(@RequestParam String id) throws ExecutionException, InterruptedException {
+    public String deleteMeasurement(@RequestParam String id) {
         return measurementService.deleteMeasurement(id);
     }
 }

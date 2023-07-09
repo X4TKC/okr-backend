@@ -27,11 +27,11 @@ public class ActionController {
         return actionService.createAction(action);
     }
     @PutMapping(value = "/update")
-    public String updateAction(@RequestParam Action action) throws ExecutionException, InterruptedException {
+    public String updateAction(@RequestBody Action action) throws ExecutionException, InterruptedException {
         return actionService.updateAction(action);
     }
     @PutMapping(value = "/delete")
-    public String deleteAction(@RequestParam String id) throws ExecutionException, InterruptedException {
+    public String deleteAction(@RequestParam String id) {
         return actionService.deleteAction(id);
     }
 }

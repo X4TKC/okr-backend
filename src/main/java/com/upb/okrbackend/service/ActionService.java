@@ -1,15 +1,13 @@
 package com.upb.okrbackend.service;
 
 import com.google.api.core.ApiFuture;
+import com.google.cloud.Timestamp;
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.WriteResult;
 import com.google.firebase.cloud.FirestoreClient;
-import com.upb.okrbackend.models.Action;
-import com.upb.okrbackend.models.KeyResult;
-import com.upb.okrbackend.models.Objective;
-import com.upb.okrbackend.models.User;
+import com.upb.okrbackend.models.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -37,9 +35,13 @@ public class ActionService {
         dbFirestore = FirestoreClient.getFirestore();
         DocumentReference documentReference = dbFirestore.collection("Action").document(id);
         DocumentSnapshot document = documentReference.get().get();
-        Action action;
+        Action action = new Action();
         if(document.exists()){
-            action = document.toObject(Action.class);
+            List<Measurement> measurementList = measurementService.getMeasurementListById(document);
+            action.setId(document.getId());
+            action.setKeyId(Objects.requireNonNull(document.getData()).get("keyId").toString());
+            action.setDescription(document.getData().get("description").toString());
+            action.setMeasurementList(measurementList);
             return action;
         }
         return null;
@@ -57,7 +59,6 @@ public class ActionService {
     }
 
     public String deleteAction(String id) {
-        dbFirestore = FirestoreClient.getFirestore();
         ApiFuture<WriteResult> writeResult = dbFirestore.collection("Action").document(id).delete();
         return "Successfully deleted " + id;
     }

@@ -2,6 +2,9 @@ package com.upb.okrbackend.models;
 
 
 
+import com.google.cloud.Timestamp;
+import com.upb.okrbackend.entities.ObjectiveEntity;
+
 import java.util.Date;
 import java.util.List;
 
@@ -12,7 +15,7 @@ public class User {
     private String password;
     private String email;
     private List<Objective> objectiveList;
-    private Date creationdate;
+    private Timestamp creationdate;
 
     public String getName() {
         return name;
@@ -38,11 +41,11 @@ public class User {
         this.email = email;
     }
 
-    public Date getCreationdate() {
+    public Timestamp getCreationdate() {
         return creationdate;
     }
 
-    public void setCreationdate(Date creationdate) {
+    public void setCreationdate(Timestamp creationdate) {
         this.creationdate = creationdate;
     }
 
