@@ -17,7 +17,7 @@ public class OkrBackendApplication {
 		ClassLoader classLoader = OkrBackendApplication.class.getClassLoader();
 		File file = new File(Objects.requireNonNull(classLoader.getResource("serviceAccountKey.json")).getFile());
 		FileInputStream serviceAccount =
-				new FileInputStream(file.getAbsolutePath());
+				new FileInputStream("src/main/resources/serviceAccountKey.json");
 		FirebaseOptions options = new FirebaseOptions.Builder()
 				.setCredentials(GoogleCredentials.fromStream(serviceAccount))
 				.build();
