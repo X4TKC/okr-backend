@@ -1,0 +1,1 @@
+web: env JAVA_OPTS="-Djava.security.egd=file:/dev/./urandom" target/okr-backend-0.0.1.jar
