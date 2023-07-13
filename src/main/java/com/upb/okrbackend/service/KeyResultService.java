@@ -1,19 +1,11 @@
 package com.upb.okrbackend.service;
 
 import com.google.api.core.ApiFuture;
-import com.google.cloud.Timestamp;
-import com.google.cloud.firestore.DocumentReference;
-import com.google.cloud.firestore.DocumentSnapshot;
-import com.google.cloud.firestore.Firestore;
-import com.google.cloud.firestore.WriteResult;
+import com.google.cloud.firestore.*;
 import com.google.firebase.cloud.FirestoreClient;
 import com.upb.okrbackend.entities.ObjectiveEntity;
-import com.upb.okrbackend.entities.UserEntity;
-import com.upb.okrbackend.models.Action;
 import com.upb.okrbackend.models.KeyResult;
 import com.upb.okrbackend.models.Objective;
-import com.upb.okrbackend.models.User;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -51,9 +43,12 @@ public class KeyResultService {
     }
 
     public String createKeyResult(KeyResult keyResult) throws ExecutionException, InterruptedException {
-        ApiFuture<WriteResult> collectionApiFuture = dbFirestore.collection(collection).document(keyResult.getId()).set(keyResult);
+        ApiFuture<DocumentReference> collectionApiFuture = dbFirestore.collection(collection).add(keyResult);
+        keyResult.setId(collectionApiFuture.get().getId());
+        updateKeyResult(keyResult);
+        //ApiFuture<WriteResult> collectionApiFuture = dbFirestore.collection(collection).document(keyResult.getId()).set(keyResult);
         addKeyResultToObjective(keyResult.getId(),keyResult.getObjectiveId());
-        return collectionApiFuture.get().getUpdateTime().toString();
+        return Objects.requireNonNull(collectionApiFuture.get().get().get().getUpdateTime()).toString();
     }
 
     public String updateKeyResult(KeyResult keyResult) throws ExecutionException, InterruptedException {
@@ -72,14 +67,16 @@ public class KeyResultService {
         List<KeyResult> keyResultList = new ArrayList<>();
         for (DocumentReference documentReferenceVar : documentReferenceKeyResult
         ) {
-            DocumentSnapshot  keyResult = dbFirestore.collection(collection).document(documentReferenceVar.getId()).get().get();
+            DocumentSnapshot  documentKeyResult = dbFirestore.collection(collection).document(documentReferenceVar.getId()).get().get();
+            if(documentKeyResult.exists()){
             keyResultVar = new KeyResult();
-            keyResultVar.setId(keyResult.getId());
-            keyResultVar.setDescription(Objects.requireNonNull(keyResult.getData()).get("description").toString());
+            keyResultVar.setId(documentKeyResult.getId());
+            keyResultVar.setDescription(Objects.requireNonNull(documentKeyResult.getData()).get("description").toString());
             keyResultVar.setObjectiveId(documentSnapshot.getId());
-            keyResultVar.setAction(keyResult.getData().get("action").toString());
-            keyResultVar.setMeasurement(keyResult.getData().get("measurement").toString());
+            keyResultVar.setAction(documentKeyResult.getData().get("action").toString());
+            keyResultVar.setMeasurement(documentKeyResult.getData().get("measurement").toString());
             keyResultList.add(keyResultVar);
+            }
         }
         return keyResultList;
     }
@@ -95,5 +92,21 @@ public class KeyResultService {
         objectiveEntity.setUserId(documentSnapshotObjective.getData().get("userId").toString());
         objectiveEntity.setName(documentSnapshotObjective.getData().get("name").toString());
         dbFirestore.collection("Objective").document(objectiveEntity.getId()).set(objectiveEntity);
+    }
+    public List<KeyResult> getAllKeyResultsFromObjective(String objectiveId) throws ExecutionException, InterruptedException {
+        List<QueryDocumentSnapshot> queryDocumentSnapshotList = dbFirestore.collection(collection).get().get().getDocuments();
+        List<QueryDocumentSnapshot> queryDocumentSnapshot=queryDocumentSnapshotList.stream().filter(a-> a.getData().get("objectiveId").equals(objectiveId)).toList();
+        List<KeyResult> keyResultList = new ArrayList<>();
+        for (QueryDocumentSnapshot queryDocumentSnapshotVar:queryDocumentSnapshot
+        ) {
+            KeyResult keyResultVar= new KeyResult();
+            keyResultVar.setId(queryDocumentSnapshotVar.getId());
+            keyResultVar.setObjectiveId(queryDocumentSnapshotVar.getData().get("objectiveId").toString());
+            keyResultVar.setDescription(queryDocumentSnapshotVar.getData().get("description").toString());
+            keyResultVar.setAction(queryDocumentSnapshotVar.getData().get("action").toString());
+            keyResultVar.setMeasurement(queryDocumentSnapshotVar.getData().get("measurement").toString());
+            keyResultList.add(keyResultVar);
+        }
+        return keyResultList;
     }
 }

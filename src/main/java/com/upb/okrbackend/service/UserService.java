@@ -1,24 +1,16 @@
 package com.upb.okrbackend.service;
 
 import com.google.api.core.ApiFuture;
-import com.google.cloud.firestore.DocumentReference;
-import com.google.cloud.firestore.DocumentSnapshot;
-import com.google.cloud.firestore.Firestore;
-import com.google.cloud.firestore.WriteResult;
+import com.google.cloud.firestore.*;
 import com.google.firebase.cloud.FirestoreClient;
-import com.google.firestore.v1.Write;
-import com.upb.okrbackend.entities.ObjectiveEntity;
+import com.upb.okrbackend.OkrExceptionErrors;
 import com.upb.okrbackend.entities.UserEntity;
 import com.upb.okrbackend.models.Objective;
 import com.upb.okrbackend.models.User;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 @Service
@@ -34,11 +26,20 @@ public class UserService {
         this.dbFirestore = dbFirestore;
         this.objectiveService = new ObjectiveService(this.dbFirestore);
     }
-    public String createUser(User user) throws ExecutionException, InterruptedException {
-        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-        user.setCreationdate(com.google.cloud.Timestamp.of(timestamp));
-        ApiFuture<WriteResult> collectionApiFuture = dbFirestore.collection(collection).document(user.getId()).set(user);
-        return collectionApiFuture.get().getUpdateTime().toString();
+    public String createUser(User user) throws ExecutionException, InterruptedException, OkrExceptionErrors {
+        if(!userExists(user.getEmail())){
+            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+            user.setCreationdate(com.google.cloud.Timestamp.of(timestamp));
+            user.setObjectiveList(new ArrayList<>());
+            ApiFuture<DocumentReference> collectionApiFuture = dbFirestore.collection(collection).add(user);
+
+            user.setId(collectionApiFuture.get().get().get().getId());
+            updateUser(user);
+//            ApiFuture<WriteResult> collectionApiFuture = dbFirestore.collection(collection).document(user.getId()).set(user);
+            return Objects.requireNonNull(collectionApiFuture.get().get().get().getUpdateTime()).toString();
+        }else {
+            throw new OkrExceptionErrors("User already created");
+        }
     }
     public User getUser(String id) throws ExecutionException, InterruptedException {
         DocumentReference documentReference = dbFirestore.collection(collection).document(id);
@@ -79,6 +80,11 @@ public class UserService {
     public String deleteUser(String id){
         ApiFuture<WriteResult> writeResult = dbFirestore.collection(collection).document(id).delete();
         return "Successfully deleted " + id;
+    }
+    public boolean userExists(String email) throws ExecutionException, InterruptedException {
+        List<QueryDocumentSnapshot> queryDocumentSnapshotList = dbFirestore.collection(collection).get().get().getDocuments();
+        QueryDocumentSnapshot queryDocumentSnapshot=queryDocumentSnapshotList.stream().filter(a-> a.getData().get("email").equals(email)).findFirst().orElse(null);
+        return queryDocumentSnapshot != null;
     }
 
 

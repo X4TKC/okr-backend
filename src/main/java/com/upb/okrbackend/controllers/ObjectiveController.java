@@ -8,12 +8,14 @@ import com.upb.okrbackend.service.ObjectiveService;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 
 @RequestMapping("/api/Objective")
 @RestController
 @EnableWebMvc
+@CrossOrigin("*")
 public class ObjectiveController {
     private ObjectiveService objectiveService;
 
@@ -23,6 +25,10 @@ public class ObjectiveController {
     @GetMapping(value = "/get")
     public Objective getObjective(@RequestParam String id) throws ExecutionException, InterruptedException {
         return objectiveService.getObjective(id);
+    }
+    @GetMapping(value = "/getAllFrom")
+    public List<Objective> getAllObjectivesFromUser(@RequestParam String id) throws ExecutionException, InterruptedException {
+        return objectiveService.getAllObjectivesFromUser(id);
     }
     @PostMapping(value = "/create")
     public String createObjective(@RequestBody ObjectiveEntity objective) throws ExecutionException, InterruptedException {
