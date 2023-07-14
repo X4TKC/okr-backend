@@ -31,7 +31,7 @@ public class UserController {
     public String updateUser(@RequestBody User user) throws ExecutionException, InterruptedException {
         return userService.updateUser(user);
     }
-    @PutMapping(value = "/delete")
+    @DeleteMapping(value = "/delete")
     public String deleteUser(@RequestParam String id) {
         return userService.deleteUser(id);
     }

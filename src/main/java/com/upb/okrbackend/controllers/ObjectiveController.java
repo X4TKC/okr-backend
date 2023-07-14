@@ -38,7 +38,7 @@ public class ObjectiveController {
     public String updateObjective(@RequestBody ObjectiveEntity objective) throws ExecutionException, InterruptedException {
         return objectiveService.updateObjective(objective);
     }
-    @PutMapping(value = "/delete")
+    @DeleteMapping(value = "/delete")
     public String deleteObjective(@RequestParam String id) {
         return objectiveService.deleteObjective(id);
     }
