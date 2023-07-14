@@ -85,8 +85,10 @@ public class ObjectiveService {
 
 
 
-    public String deleteObjective(String id) {
+    public String deleteObjective(String id) throws ExecutionException, InterruptedException {
+        String userId = dbFirestore.collection(collection).document(id).get().get().getData().get("userId").toString();
         ApiFuture<WriteResult> writeResult = dbFirestore.collection(collection).document(id).delete();
+        deleteObjectiveFromUser(userId,id);
         return "Successfully deleted " + id;
     }
 
@@ -114,8 +116,20 @@ public class ObjectiveService {
         DocumentSnapshot documentSnapshotUser = dbFirestore.collection("User").document(userId).get().get();
         List<DocumentReference> documentReferenceListUser = (List<DocumentReference>) documentSnapshotUser.getData().get("objectiveList");
         documentReferenceListUser.add(dbFirestore.collection(collection).document(id));
+        setUserEntity(documentSnapshotUser, documentReferenceListUser);
+    }
+    public void deleteObjectiveFromUser(String userId, String objectiveId) throws ExecutionException, InterruptedException {
+        DocumentSnapshot documentSnapshotUser = dbFirestore.collection("User").document(userId).get().get();
+        if(documentSnapshotUser.exists()) {
+            List<DocumentReference> objectiveList=(List<DocumentReference>) documentSnapshotUser.getData().get("objectiveList");
+            objectiveList.removeIf(a->a.getId().equals(objectiveId));
+            setUserEntity(documentSnapshotUser, objectiveList);
+        }
+    }
+
+    private void setUserEntity(DocumentSnapshot documentSnapshotUser, List<DocumentReference> objectiveList) {
         UserEntity userEntity = new UserEntity();
-        userEntity.setObjectiveList(documentReferenceListUser);
+        userEntity.setObjectiveList(objectiveList);
         userEntity.setId(documentSnapshotUser.getId());
         userEntity.setEmail(documentSnapshotUser.getData().get("email").toString());
         userEntity.setPassword(documentSnapshotUser.getData().get("password").toString());
@@ -123,6 +137,7 @@ public class ObjectiveService {
         userEntity.setName(documentSnapshotUser.getData().get("name").toString());
         dbFirestore.collection("User").document(userEntity.getId()).set(userEntity);
     }
+
     public List<Objective> getAllObjectivesFromUser(String userId) throws ExecutionException, InterruptedException {
         List<QueryDocumentSnapshot> queryDocumentSnapshotList = dbFirestore.collection(collection).get().get().getDocuments();
         List<QueryDocumentSnapshot> queryDocumentSnapshot=queryDocumentSnapshotList.stream().filter(a-> a.getData().get("userId").equals(userId)).toList();

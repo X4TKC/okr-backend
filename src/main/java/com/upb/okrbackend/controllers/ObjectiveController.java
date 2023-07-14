@@ -39,7 +39,7 @@ public class ObjectiveController {
         return objectiveService.updateObjective(objective);
     }
     @DeleteMapping(value = "/delete")
-    public String deleteObjective(@RequestParam String id) {
+    public String deleteObjective(@RequestParam String id) throws ExecutionException, InterruptedException {
         return objectiveService.deleteObjective(id);
     }
 
