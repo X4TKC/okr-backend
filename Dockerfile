@@ -3,7 +3,7 @@
 #
 FROM openjdk:17-oracle AS build
 COPY . .
-RUN mvn clean package -DskipTests
+#RUN mvn clean package -DskipTests
 
 #
 # Package stage
