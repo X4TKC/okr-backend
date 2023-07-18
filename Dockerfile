@@ -1,10 +1,14 @@
 FROM openjdk:17-jdk-slim-buster
-WORKDIR /app
+COPY gradlew .
+COPY gradle gradle
+COPY build.gradle .
+COPY settings.gradle .
+COPY src src
 
-COPY app/build/lib/* build/lib/
-CMD find . -name '*.jar'
-RUN ls -al
-COPY app/build/libs/okr-backend-0.0.1.jar build/
+RUN chmod +x ./gradlew
+RUN ./gradlew bootJar
 
-WORKDIR /app/build
-ENTRYPOINT java -jar app.jar
+RUN cp okr-backend-0.0.1.jar.jar .
+
+EXPOSE 8080
+ENTRYPOINT ["java","-jar","/example"]
