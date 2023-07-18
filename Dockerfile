@@ -10,7 +10,10 @@ COPY . .
 #
 CMD ls -l
 FROM openjdk:17-jdk-slim
-COPY --from=build /target/okr-backend-0.0.1.jar okr.jar
+WORKDIR /okr-backend
+COPY okr-backend/build/lib/* build/lib/
+COPY okr-backend/build/libs/okr-backend-0.0.1.jar build/
+WORKDIR /okr-backend/build
 # ENV PORT=8080
 EXPOSE 8080
-ENTRYPOINT ["java","-jar","okr.jar"]
+ENTRYPOINT ["java","-jar","okr-backend-0.0.1.jar"]
