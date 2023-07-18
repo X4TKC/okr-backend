@@ -3,8 +3,8 @@
 #
 FROM openjdk:17-oracle AS build
 COPY . .
-RUN gradle clean
-RUN gradle build
+CMD gradle clean
+CMD gradle build
 #
 # Package stage
 #
