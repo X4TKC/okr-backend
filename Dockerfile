@@ -8,7 +8,7 @@ COPY src src
 RUN chmod +x ./gradlew
 RUN ./gradlew bootJar
 
-RUN cp okr-backend-0.0.1.jar .
+RUN cp /build/libs/okr-backend-0.0.1.jar .
 
 EXPOSE 8080
 ENTRYPOINT ["java","-jar","/okr-backend-0.0.1.jar"]
