@@ -3,8 +3,8 @@
 #
 FROM openjdk:17-oracle AS build
 COPY . .
-#RUN mvn clean package -DskipTests
-
+RUN ./gradlew clean
+RUN ./gradlew build
 #
 # Package stage
 #
