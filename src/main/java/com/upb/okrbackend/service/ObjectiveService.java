@@ -77,7 +77,6 @@ public class ObjectiveService {
             List<KeyResult> keyResultList = keyResultService.getKeyResultListById(document);
             Objective objectiveVar = new Objective(objective.getId(), objective.getName(), keyResultList, objective.getDateStart(), objective.getDateEnd(), objective.getUserId());
             ApiFuture<WriteResult> collectionApiFuture = dbFirestore.collection(collection).document(objectiveVar.getId()).set(objectiveVar);
-
         return collectionApiFuture.get().getUpdateTime().toString();
         }
         return null;
@@ -131,7 +130,7 @@ public class ObjectiveService {
         UserEntity userEntity = new UserEntity();
         userEntity.setObjectiveList(objectiveList);
         userEntity.setId(documentSnapshotUser.getId());
-        userEntity.setEmail(documentSnapshotUser.getData().get("email").toString());
+        userEntity.setEmail(Objects.requireNonNull(documentSnapshotUser.getData()).get("email").toString());
         userEntity.setPassword(documentSnapshotUser.getData().get("password").toString());
         userEntity.setCreationdate(documentSnapshotUser.getCreateTime());
         userEntity.setName(documentSnapshotUser.getData().get("name").toString());
