@@ -5,7 +5,7 @@ FROM openjdk:17-oracle AS build
 COPY . .
 WORKDIR /okr-backend
 CMD gradlew clean
-RUN ls -l /okr-backend/build/libs/
+RUN ls -l
 #
 # Package stage
 #
