@@ -1,17 +1,14 @@
-#
-# Build stage
-#
-FROM openjdk:17-oracle AS build
-COPY . .
-WORKDIR /okr-backend
-CMD gradlew clean
-RUN ls -l /okr-backend/build/libs/
-#
-# Package stage
-#
-#CMD ls -l
-#FROM openjdk:17-jdk-slim
-#COPY --from=build /target/demo-0.0.1-SNAPSHOT.jar demo.jar
-## ENV PORT=8080
-#EXPOSE 8080
-#ENTRYPOINT ["java","-jar","okr.jar"]
+FROM openjdk:17-jdk-slim-buster
+COPY gradlew .
+COPY gradle gradle
+COPY build.gradle .
+COPY settings.gradle .
+COPY src src
+
+RUN chmod +x ./gradlew
+RUN ./gradlew bootJar
+
+RUN cp okr-backend-0.0.1.jar .
+
+EXPOSE 8080
+ENTRYPOINT ["java","-jar","/okr-backend-0.0.1.jar"]
