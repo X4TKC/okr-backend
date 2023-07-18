@@ -8,6 +8,7 @@ CMD gradle build
 #
 # Package stage
 #
+CMD ls -l
 FROM openjdk:17-jdk-slim
 COPY --from=build /home/gradle/src/build/libs/okr-backend-0.0.1.jar okr.jar
 # ENV PORT=8080
