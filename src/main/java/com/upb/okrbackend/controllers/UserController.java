@@ -23,6 +23,10 @@ public class UserController {
     public User getUser(@RequestParam String id) throws ExecutionException, InterruptedException {
         return userService.getUser(id);
     }
+    @GetMapping(value = "/getByEmail")
+    public User getUserByEmail(@RequestParam String email) throws ExecutionException, InterruptedException {
+        return userService.getUserByEmail(email);
+    }
     @PostMapping(value = "/create")
     public String createUser(@RequestBody User user) throws ExecutionException, InterruptedException, OkrExceptionErrors {
         return userService.createUser(user);
