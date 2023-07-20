@@ -92,13 +92,15 @@ public class UserService {
         List<QueryDocumentSnapshot> queryDocumentSnapshotList = dbFirestore.collection(collection).get().get().getDocuments();
         QueryDocumentSnapshot queryDocumentSnapshot=queryDocumentSnapshotList.stream().filter(a-> a.getData().get("email").equals(email)).findFirst().orElse(null);
         User user = new User();
+        List<Objective> objectiveList = new ArrayList<>();
         if(queryDocumentSnapshot.exists()){
             user.setId(queryDocumentSnapshot.getId());
             user.setEmail(queryDocumentSnapshot.getData().get("email").toString());
-            user.setPassword(queryDocumentSnapshot.getData().get("password").toString());
+//            user.setPassword(queryDocumentSnapshot.getData().get("password").toString());
+            user.setPassword("nope");
             user.setCreationdate(queryDocumentSnapshot.getCreateTime());
             user.setName(queryDocumentSnapshot.getData().get("name").toString());
-            user.setObjectiveList(objectiveService.getObjectiveListById(queryDocumentSnapshot));
+            user.setObjectiveList(objectiveList);
             return user;
         }
         return null;
