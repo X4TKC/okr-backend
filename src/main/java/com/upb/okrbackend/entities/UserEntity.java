@@ -18,7 +18,7 @@ public class UserEntity {
     private String email;
     private List<DocumentReference> objectiveList;
     private Timestamp creationdate;
-
+    private String lastlogin;
     public UserEntity() {
     }
 
@@ -69,5 +69,13 @@ public class UserEntity {
 
     public void setCreationdate(Timestamp creationdate) {
         this.creationdate = creationdate;
+    }
+
+    public String getLastlogin() {
+        return lastlogin;
+    }
+
+    public void setLastlogin(String lastlogin) {
+        this.lastlogin = lastlogin;
     }
 }

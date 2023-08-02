@@ -43,5 +43,13 @@ public class KeyResultController {
     public String deleteKeyResult(@RequestParam String id) {
         return keyResultService.deleteKeyResult(id);
     }
+    @PutMapping(value = "/check")
+    public KeyResult checkKeyResult(@RequestParam String id) throws ExecutionException, InterruptedException {
+        return keyResultService.checkKeyResult(id);
+    }
+    @PutMapping(value = "/unCheck")
+    public KeyResult unCheckKeyResult(@RequestParam String id) throws ExecutionException, InterruptedException {
+        return keyResultService.unCheckKeyResult(id);
+    }
 
 }

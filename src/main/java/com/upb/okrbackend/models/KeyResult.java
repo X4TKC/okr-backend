@@ -11,6 +11,7 @@ public class KeyResult {
     private String objectiveId;
     private String action;
     private String measurement;
+    private boolean check;
 
 
 
@@ -52,5 +53,13 @@ public class KeyResult {
 
     public void setMeasurement(String measurement) {
         this.measurement = measurement;
+    }
+
+    public boolean getCheck() {
+        return check;
+    }
+
+    public void setCheck(boolean check) {
+        this.check = check;
     }
 }

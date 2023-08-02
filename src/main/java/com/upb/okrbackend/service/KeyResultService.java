@@ -37,6 +37,7 @@ public class KeyResultService {
             keyResult.setObjectiveId(document.getData().get("objectiveId").toString());
             keyResult.setAction(document.getData().get("action").toString());
             keyResult.setMeasurement(document.getData().get("measurement").toString());
+            keyResult.setCheck((Boolean) document.getData().get("check"));
             return keyResult;
         }
         return null;
@@ -75,6 +76,7 @@ public class KeyResultService {
             keyResultVar.setObjectiveId(documentSnapshot.getId());
             keyResultVar.setAction(documentKeyResult.getData().get("action").toString());
             keyResultVar.setMeasurement(documentKeyResult.getData().get("measurement").toString());
+            keyResultVar.setCheck((Boolean) documentKeyResult.getData().get("check"));
             keyResultList.add(keyResultVar);
             }
         }
@@ -105,8 +107,30 @@ public class KeyResultService {
             keyResultVar.setDescription(queryDocumentSnapshotVar.getData().get("description").toString());
             keyResultVar.setAction(queryDocumentSnapshotVar.getData().get("action").toString());
             keyResultVar.setMeasurement(queryDocumentSnapshotVar.getData().get("measurement").toString());
+            keyResultVar.setCheck((Boolean) queryDocumentSnapshotVar.getData().get("check"));
             keyResultList.add(keyResultVar);
         }
         return keyResultList;
+    }
+    public KeyResult checkKeyResult(String id) throws ExecutionException, InterruptedException {
+        KeyResult keyResult=this.getKeyResult(id);
+        keyResult.setCheck(true);
+        this.updateKeyResult(keyResult);
+        return keyResult;
+    }
+    public KeyResult unCheckKeyResult(String id) throws ExecutionException, InterruptedException {
+        KeyResult keyResult=this.getKeyResult(id);
+        keyResult.setCheck(false);
+        this.updateKeyResult(keyResult);
+        return keyResult;
+    }
+
+    public void deleteAllKeyResultFromObjective(String id) throws ExecutionException, InterruptedException {
+        List<QueryDocumentSnapshot> queryDocumentSnapshotList = dbFirestore.collection(collection).get().get().getDocuments();
+        List<QueryDocumentSnapshot> queryDocumentSnapshot=queryDocumentSnapshotList.stream().filter(a-> a.getData().get("objectiveId").equals(id)).toList();
+        for (QueryDocumentSnapshot queryDocumentSnapshotVar:queryDocumentSnapshot
+        ) {
+            deleteKeyResult(queryDocumentSnapshotVar.getId());
+        }
     }
 }

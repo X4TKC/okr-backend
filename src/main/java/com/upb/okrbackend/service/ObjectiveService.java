@@ -88,6 +88,7 @@ public class ObjectiveService {
         String userId = dbFirestore.collection(collection).document(id).get().get().getData().get("userId").toString();
         ApiFuture<WriteResult> writeResult = dbFirestore.collection(collection).document(id).delete();
         deleteObjectiveFromUser(userId,id);
+        keyResultService.deleteAllKeyResultFromObjective(id);
         return "Successfully deleted " + id;
     }
 
@@ -153,5 +154,14 @@ public class ObjectiveService {
             objectiveList.add(objectiveVar);
         }
         return objectiveList;
+    }
+    public Objective resetAllKeyResults(String id) throws ExecutionException, InterruptedException {
+        Objective objective=this.getObjective(id);
+        List<KeyResult> keyResultList = objective.getKeyResultList();
+        for (KeyResult keyresult: keyResultList
+             ) {
+            this.keyResultService.unCheckKeyResult(keyresult.getId());
+        }
+        return objective;
     }
 }

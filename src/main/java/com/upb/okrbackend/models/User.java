@@ -16,6 +16,7 @@ public class User {
     private String email;
     private List<Objective> objectiveList;
     private Timestamp creationdate;
+    private String lastlogin;
 
     public String getName() {
         return name;
@@ -63,5 +64,13 @@ public class User {
 
     public void setObjectiveList(List<Objective> objectiveList) {
         this.objectiveList = objectiveList;
+    }
+
+    public String getLastlogin() {
+        return lastlogin;
+    }
+
+    public void setLastlogin(String lastlogin) {
+        this.lastlogin = lastlogin;
     }
 }

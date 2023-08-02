@@ -42,5 +42,9 @@ public class ObjectiveController {
     public String deleteObjective(@RequestParam String id) throws ExecutionException, InterruptedException {
         return objectiveService.deleteObjective(id);
     }
+    @PutMapping(value = "/reset")
+    public Objective resetObjective(@RequestParam String id) throws ExecutionException, InterruptedException {
+        return  objectiveService.resetAllKeyResults(id);
+    }
 
 }

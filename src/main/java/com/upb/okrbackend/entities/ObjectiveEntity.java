@@ -14,7 +14,8 @@ public class ObjectiveEntity {
     private String dateEnd;
     private String userId;
 
-
+    private boolean enable;
+    private String type;
 
     public ObjectiveEntity() {
     }
@@ -75,4 +76,19 @@ public class ObjectiveEntity {
         this.userId = userId;
     }
 
+    public boolean isEnable() {
+        return enable;
+    }
+
+    public void setEnable(boolean enable) {
+        this.enable = enable;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
 }
