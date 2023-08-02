@@ -93,7 +93,7 @@ public class UserService {
         QueryDocumentSnapshot queryDocumentSnapshot=queryDocumentSnapshotList.stream().filter(a-> a.getData().get("email").equals(email)).findFirst().orElse(null);
         User user = new User();
         List<Objective> objectiveList = new ArrayList<>();
-        if(queryDocumentSnapshot.exists()){
+        if(queryDocumentSnapshot!=null&&queryDocumentSnapshot.exists()){
             user.setId(queryDocumentSnapshot.getId());
             user.setEmail(queryDocumentSnapshot.getData().get("email").toString());
 //            user.setPassword(queryDocumentSnapshot.getData().get("password").toString());
