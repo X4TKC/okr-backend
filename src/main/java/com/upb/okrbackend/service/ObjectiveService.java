@@ -1,20 +1,23 @@
 package com.upb.okrbackend.service;
 
 import com.google.api.core.ApiFuture;
-import com.google.cloud.Timestamp;
 import com.google.cloud.firestore.*;
 import com.google.firebase.cloud.FirestoreClient;
 import com.upb.okrbackend.entities.ObjectiveEntity;
 import com.upb.okrbackend.entities.UserEntity;
 import com.upb.okrbackend.models.KeyResult;
 import com.upb.okrbackend.models.Objective;
-import com.upb.okrbackend.models.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 @Service
@@ -28,14 +31,11 @@ public class ObjectiveService {
 
     public ObjectiveService() {
         this.dbFirestore = FirestoreClient.getFirestore();
-
         this.keyResultService = new KeyResultService(this.dbFirestore);
-
     }
     public ObjectiveService(Firestore dbFirestore) {
         this.dbFirestore = dbFirestore;
         this.keyResultService = new KeyResultService(this.dbFirestore);
-
     }
 
     public Objective getObjective(String id) throws ExecutionException, InterruptedException {
@@ -50,6 +50,8 @@ public class ObjectiveService {
             objective.setDateEnd(document.getData().get("dateEnd").toString());
             objective.setName(document.getData().get("name").toString());
             objective.setKeyResultList(keyResultList);
+            //objective.setState(document.getData().get("state").toString());
+            objective.setProgressTracker(Integer.parseInt(document.getData().get("progressTracker").toString()));
             return objective;
         }
         return null;
@@ -63,6 +65,8 @@ public class ObjectiveService {
         ApiFuture<DocumentReference> collectionApiFuture = dbFirestore.collection(collection).add(objectiveVar);
         objective.setId(collectionApiFuture.get().get().get().getId());
         objectiveVar.setId(objective.getId());
+        objective.setProgressTracker(0);
+        objectiveVar.setProgressTracker(objective.getProgressTracker());
         updateObjective(objective);
         addObjectiveToUser(objectiveVar.getId(), objectiveVar.getUserId());
         return Objects.requireNonNull(collectionApiFuture.get().get().get().getUpdateTime()).toString();
@@ -78,6 +82,15 @@ public class ObjectiveService {
             Objective objectiveVar = new Objective(objective.getId(), objective.getName(), keyResultList, objective.getDateStart(), objective.getDateEnd(), objective.getUserId());
             ApiFuture<WriteResult> collectionApiFuture = dbFirestore.collection(collection).document(objectiveVar.getId()).set(objectiveVar);
         return collectionApiFuture.get().getUpdateTime().toString();
+        }
+        return null;
+    }
+    public String updateObjectiveEntity(ObjectiveEntity objective) throws ExecutionException, InterruptedException {
+        DocumentReference documentReference = dbFirestore.collection(collection).document(objective.getId());
+        DocumentSnapshot document = documentReference.get().get();
+        if(document.exists()) {
+            ApiFuture<WriteResult> collectionApiFuture = dbFirestore.collection(collection).document(objective.getId()).set(objective);
+            return collectionApiFuture.get().getUpdateTime().toString();
         }
         return null;
     }
@@ -151,6 +164,9 @@ public class ObjectiveService {
             objectiveVar.setDateStart(queryDocumentSnapshotVar.getData().get("dateStart").toString());
             objectiveVar.setDateEnd(queryDocumentSnapshotVar.getData().get("dateEnd").toString());
             objectiveVar.setKeyResultList(keyResultService.getKeyResultListById(queryDocumentSnapshotVar));
+            objectiveVar.setProgressTracker(Integer.parseInt(queryDocumentSnapshotVar.getData().get("progressTracker").toString()));
+            //objectiveVar.setState(queryDocumentSnapshotVar.getData().get("state").toString());
+            //objectiveVar.setType(queryDocumentSnapshotVar.getData().get("type").toString());
             objectiveList.add(objectiveVar);
         }
         return objectiveList;
@@ -162,6 +178,65 @@ public class ObjectiveService {
              ) {
             this.keyResultService.unCheckKeyResult(keyresult.getId());
         }
+        ;
+        objective=this.getObjective(id);
         return objective;
+    }
+    public boolean areAllTheKeyResultsChecked(String id) throws ExecutionException, InterruptedException {
+        Objective objective=this.getObjective(id);
+        List<KeyResult> keyResultList = objective.getKeyResultList();
+        boolean check = true;
+        for (KeyResult keyresult: keyResultList
+        ) {
+            check= check && keyresult.getCheck();
+        }
+        return check;
+    }
+    public void incrementProgressTracker(String id) throws ExecutionException, InterruptedException {
+        Objective objective=this.getObjective(id);
+        objective.setProgressTracker(objective.getProgressTracker()+1);
+        ObjectiveEntity objectiveEntity=this.transformNormalToEntity(objective);
+        updateObjectiveEntity(objectiveEntity);
+    }
+    public ObjectiveEntity transformNormalToEntity(Objective objective){
+        ObjectiveEntity objectiveEntity = new ObjectiveEntity();
+        objectiveEntity.setId(objective.getId());
+        objectiveEntity.setName(objective.getName());
+        objectiveEntity.setUserId(objective.getUserId());
+        objectiveEntity.setDateStart(objective.getDateStart());
+        objectiveEntity.setDateEnd(objective.getDateEnd());
+        List<DocumentReference> keyResultListDR = new ArrayList<>();
+        List<KeyResult> keyResultList = objective.getKeyResultList();
+        //objectiveEntity.setType(objective.getType());
+        //objectiveEntity.setState(objective.getState());
+        objectiveEntity.setProgressTracker(objective.getProgressTracker());
+        for (KeyResult keyresult: keyResultList
+             ) {
+            keyResultListDR.add(dbFirestore.collection(collection).document(keyresult.getId()));
+        }
+        objectiveEntity.setKeyResultList(keyResultListDR);
+        return objectiveEntity;
+    }
+    public void isObjectiveCompleted(String id) throws ExecutionException, InterruptedException {
+        Objective objective=this.getObjective(id);
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+        LocalDate start = LocalDate.parse(objective.getDateStart(),dtf);
+        LocalDate end  = LocalDate.parse(objective.getDateEnd(),dtf);
+        long diffInDays = start.datesUntil(end).count();
+        if(objective.getProgressTracker()>= diffInDays){
+            objective.setState("Completed");
+        }
+        else {
+            objective.setState("Not Completed"); // Adjust status accordingly
+        }
+        updateObjectiveEntity(this.transformNormalToEntity(objective));
+    }
+    public boolean checkDailyObjective(String id) throws ExecutionException, InterruptedException {
+        boolean check=this.areAllTheKeyResultsChecked(id);
+        if(check){
+            this.incrementProgressTracker(id);
+            this.isObjectiveCompleted(id);
+        }
+        return check;
     }
 }

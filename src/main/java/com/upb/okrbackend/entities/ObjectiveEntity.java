@@ -16,6 +16,9 @@ public class ObjectiveEntity {
 
     private boolean enable;
     private String type;
+    private String state;
+
+    private int progressTracker;
 
     public ObjectiveEntity() {
     }
@@ -90,5 +93,21 @@ public class ObjectiveEntity {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
+    }
+
+    public int getProgressTracker() {
+        return progressTracker;
+    }
+
+    public void setProgressTracker(int progressTracker) {
+        this.progressTracker = progressTracker;
     }
 }

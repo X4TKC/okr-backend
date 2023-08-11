@@ -2,6 +2,7 @@ package com.upb.okrbackend.controllers;
 
 
 import com.upb.okrbackend.entities.ObjectiveEntity;
+import com.upb.okrbackend.models.KeyResult;
 import com.upb.okrbackend.models.Objective;
 import com.upb.okrbackend.models.User;
 import com.upb.okrbackend.service.ObjectiveService;
@@ -45,6 +46,10 @@ public class ObjectiveController {
     @PutMapping(value = "/reset")
     public Objective resetObjective(@RequestParam String id) throws ExecutionException, InterruptedException {
         return  objectiveService.resetAllKeyResults(id);
+    }
+    @PutMapping(value = "/check")
+    public boolean checkObjective(@RequestParam String id) throws ExecutionException, InterruptedException {
+        return objectiveService.checkDailyObjective(id);
     }
 
 }

@@ -6,6 +6,7 @@ import com.google.firebase.cloud.FirestoreClient;
 import com.upb.okrbackend.entities.ObjectiveEntity;
 import com.upb.okrbackend.models.KeyResult;
 import com.upb.okrbackend.models.Objective;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -17,7 +18,6 @@ import java.util.concurrent.ExecutionException;
 public class KeyResultService {
     private Firestore dbFirestore;
     private String collection="KeyResult";
-
     public KeyResultService() {
         this.dbFirestore = FirestoreClient.getFirestore();
     }
