@@ -2,6 +2,7 @@ package com.upb.okrbackend.entities;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.firestore.DocumentReference;
+import com.upb.okrbackend.models.Check;
 import com.upb.okrbackend.models.KeyResult;
 
 import java.util.List;
@@ -10,6 +11,7 @@ public class ObjectiveEntity {
     private String id;
     private String name;
     private List<DocumentReference> keyResultList;
+    private List<DocumentReference> checkList;
     private String dateStart;
     private String dateEnd;
     private String userId;
@@ -109,5 +111,13 @@ public class ObjectiveEntity {
 
     public void setProgressTracker(int progressTracker) {
         this.progressTracker = progressTracker;
+    }
+
+    public List<DocumentReference> getCheckList() {
+        return checkList;
+    }
+
+    public void setCheckList(List<DocumentReference> checkList) {
+        this.checkList = checkList;
     }
 }

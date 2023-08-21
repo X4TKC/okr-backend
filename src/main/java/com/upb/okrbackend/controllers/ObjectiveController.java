@@ -48,8 +48,8 @@ public class ObjectiveController {
         return  objectiveService.resetAllKeyResults(id);
     }
     @PutMapping(value = "/check")
-    public boolean checkObjective(@RequestParam String id) throws ExecutionException, InterruptedException {
-        return objectiveService.checkDailyObjective(id);
+    public boolean checkObjective(@RequestParam String id, @RequestParam String day, @RequestParam long value, @RequestParam String keyId) throws ExecutionException, InterruptedException {
+        return objectiveService.checkDailyObjective(id, day, value, keyId);
     }
 
 }

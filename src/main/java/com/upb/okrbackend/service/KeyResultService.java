@@ -18,6 +18,7 @@ import java.util.concurrent.ExecutionException;
 public class KeyResultService {
     private Firestore dbFirestore;
     private String collection="KeyResult";
+
     public KeyResultService() {
         this.dbFirestore = FirestoreClient.getFirestore();
     }
@@ -26,21 +27,9 @@ public class KeyResultService {
     }
 
     public KeyResult getKeyResult(String id) throws ExecutionException, InterruptedException {
-        dbFirestore = FirestoreClient.getFirestore();
         DocumentReference documentReference = dbFirestore.collection(collection).document(id);
         DocumentSnapshot document = documentReference.get().get();
-        KeyResult keyResult = new KeyResult();
-        if(document.exists()){
-
-            keyResult.setId(document.getId());
-            keyResult.setDescription(document.getData().get("description").toString());
-            keyResult.setObjectiveId(document.getData().get("objectiveId").toString());
-            keyResult.setAction(document.getData().get("action").toString());
-            keyResult.setMeasurement(document.getData().get("measurement").toString());
-            keyResult.setCheck((Boolean) document.getData().get("check"));
-            return keyResult;
-        }
-        return null;
+        return setKeyResultFromDocument(document);
     }
 
     public String createKeyResult(KeyResult keyResult) throws ExecutionException, InterruptedException {
@@ -64,21 +53,11 @@ public class KeyResultService {
 
     public List<KeyResult> getKeyResultListById(DocumentSnapshot documentSnapshot) throws ExecutionException, InterruptedException {
         List<DocumentReference> documentReferenceKeyResult = (List<DocumentReference>) documentSnapshot.getData().get("keyResultList");
-        KeyResult keyResultVar;
         List<KeyResult> keyResultList = new ArrayList<>();
         for (DocumentReference documentReferenceVar : documentReferenceKeyResult
         ) {
             DocumentSnapshot  documentKeyResult = dbFirestore.collection(collection).document(documentReferenceVar.getId()).get().get();
-            if(documentKeyResult.exists()){
-            keyResultVar = new KeyResult();
-            keyResultVar.setId(documentKeyResult.getId());
-            keyResultVar.setDescription(Objects.requireNonNull(documentKeyResult.getData()).get("description").toString());
-            keyResultVar.setObjectiveId(documentSnapshot.getId());
-            keyResultVar.setAction(documentKeyResult.getData().get("action").toString());
-            keyResultVar.setMeasurement(documentKeyResult.getData().get("measurement").toString());
-            keyResultVar.setCheck((Boolean) documentKeyResult.getData().get("check"));
-            keyResultList.add(keyResultVar);
-            }
+            keyResultList.add(setKeyResultFromDocument(documentKeyResult));
         }
         return keyResultList;
     }
@@ -101,14 +80,7 @@ public class KeyResultService {
         List<KeyResult> keyResultList = new ArrayList<>();
         for (QueryDocumentSnapshot queryDocumentSnapshotVar:queryDocumentSnapshot
         ) {
-            KeyResult keyResultVar= new KeyResult();
-            keyResultVar.setId(queryDocumentSnapshotVar.getId());
-            keyResultVar.setObjectiveId(queryDocumentSnapshotVar.getData().get("objectiveId").toString());
-            keyResultVar.setDescription(queryDocumentSnapshotVar.getData().get("description").toString());
-            keyResultVar.setAction(queryDocumentSnapshotVar.getData().get("action").toString());
-            keyResultVar.setMeasurement(queryDocumentSnapshotVar.getData().get("measurement").toString());
-            keyResultVar.setCheck((Boolean) queryDocumentSnapshotVar.getData().get("check"));
-            keyResultList.add(keyResultVar);
+            keyResultList.add(setKeyResultFromDocument(queryDocumentSnapshotVar));
         }
         return keyResultList;
     }
@@ -132,5 +104,21 @@ public class KeyResultService {
         ) {
             deleteKeyResult(queryDocumentSnapshotVar.getId());
         }
+    }
+    public KeyResult setKeyResultFromDocument(DocumentSnapshot documentSnapshot) throws ExecutionException, InterruptedException {
+        KeyResult keyResult = new KeyResult();
+        if(documentSnapshot.exists()){
+            keyResult.setId(documentSnapshot.getId());
+            keyResult.setDescription(documentSnapshot.getData().get("description").toString());
+            keyResult.setObjectiveId(documentSnapshot.getData().get("objectiveId").toString());
+            keyResult.setAction(documentSnapshot.getData().get("action").toString());
+            keyResult.setMeasurement(documentSnapshot.getData().get("measurement").toString());
+            keyResult.setCheck((Boolean) documentSnapshot.getData().get("check"));
+            keyResult.setDay(documentSnapshot.getData().get("day").toString());
+            keyResult.setIncreasing((Boolean) documentSnapshot.getData().get("increasing"));
+            keyResult.setValue(Integer.parseInt(documentSnapshot.getData().get("value").toString()));
+            return keyResult;
+        }
+        return null;
     }
 }

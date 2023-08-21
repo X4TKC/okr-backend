@@ -11,50 +11,40 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 
 @Service
 public class ObjectiveService {
+
     private Firestore dbFirestore;
     @Autowired
     private KeyResultService keyResultService;
+    @Autowired
+    private CheckService checkService;
 
-
+    @Autowired
+    private KeyValueService keyValueService;
     private final String collection="Objective";
 
     public ObjectiveService() {
         this.dbFirestore = FirestoreClient.getFirestore();
         this.keyResultService = new KeyResultService(this.dbFirestore);
+        this.checkService = new CheckService(this.dbFirestore);
     }
     public ObjectiveService(Firestore dbFirestore) {
         this.dbFirestore = dbFirestore;
         this.keyResultService = new KeyResultService(this.dbFirestore);
+        this.checkService = new CheckService(this.dbFirestore);
     }
 
     public Objective getObjective(String id) throws ExecutionException, InterruptedException {
         DocumentReference documentReference = dbFirestore.collection(collection).document(id);
         DocumentSnapshot document = documentReference.get().get();
-        Objective objective = new Objective();
-        if(document.exists()){
-            List<KeyResult> keyResultList = keyResultService.getKeyResultListById(document);
-            objective.setId(document.getId());
-            objective.setUserId(document.getData().get("userId").toString());
-            objective.setDateStart(Objects.requireNonNull(document.getData()).get("dateStart").toString());
-            objective.setDateEnd(document.getData().get("dateEnd").toString());
-            objective.setName(document.getData().get("name").toString());
-            objective.setKeyResultList(keyResultList);
-            //objective.setState(document.getData().get("state").toString());
-            objective.setProgressTracker(Integer.parseInt(document.getData().get("progressTracker").toString()));
-            return objective;
-        }
-        return null;
+        return setObjectiveFromDocument(document);
     }
 
     public String createObjective(ObjectiveEntity objective) throws ExecutionException, InterruptedException {
@@ -69,6 +59,7 @@ public class ObjectiveService {
         objectiveVar.setProgressTracker(objective.getProgressTracker());
         updateObjective(objective);
         addObjectiveToUser(objectiveVar.getId(), objectiveVar.getUserId());
+        checkService.generateAllTheChecksBetweenDates(objective.getDateStart(),objective.getDateEnd(),objective.getId());
         return Objects.requireNonNull(collectionApiFuture.get().get().get().getUpdateTime()).toString();
     }
 
@@ -95,33 +86,23 @@ public class ObjectiveService {
         return null;
     }
 
-
-
     public String deleteObjective(String id) throws ExecutionException, InterruptedException {
         String userId = dbFirestore.collection(collection).document(id).get().get().getData().get("userId").toString();
         ApiFuture<WriteResult> writeResult = dbFirestore.collection(collection).document(id).delete();
         deleteObjectiveFromUser(userId,id);
+        keyValueService.deleteAllKeyValueFromObjective(id);
         keyResultService.deleteAllKeyResultFromObjective(id);
+        checkService.deleteAllCheckFromObjective(id);
         return "Successfully deleted " + id;
     }
 
     public List<Objective> getObjectiveListById(DocumentSnapshot document) throws ExecutionException, InterruptedException {
         List<DocumentReference> documentReferenceObjective = (List<DocumentReference>) document.getData().get("objectiveList");
-        Objective objectiveVar;
         List<Objective> objectiveList = new ArrayList<>();
         for (DocumentReference documentReferenceVar : documentReferenceObjective
         ) {
             DocumentSnapshot  documentObjective = dbFirestore.collection(collection).document(documentReferenceVar.getId()).get().get();
-            if(documentObjective.exists()){
-            objectiveVar = new Objective();
-            objectiveVar.setId(documentObjective.getId());
-            objectiveVar.setName(Objects.requireNonNull(documentObjective.getData()).get("name").toString());
-            objectiveVar.setDateStart(documentObjective.getData().get("dateStart").toString());
-            objectiveVar.setDateEnd(documentObjective.getData().get("dateEnd").toString());
-            objectiveVar.setUserId(documentObjective.getData().get("userId").toString());
-            objectiveVar.setKeyResultList(keyResultService.getKeyResultListById(documentObjective));
-            objectiveList.add(objectiveVar);
-            }
+            objectiveList.add(setObjectiveFromDocument(documentObjective));
         }
         return objectiveList;
     }
@@ -157,17 +138,7 @@ public class ObjectiveService {
         List<Objective> objectiveList = new ArrayList<>();
         for (QueryDocumentSnapshot queryDocumentSnapshotVar:queryDocumentSnapshot
              ) {
-            Objective objectiveVar= new Objective();
-            objectiveVar.setId(queryDocumentSnapshotVar.getId());
-            objectiveVar.setUserId(queryDocumentSnapshotVar.getData().get("userId").toString());
-            objectiveVar.setName(queryDocumentSnapshotVar.getData().get("name").toString());
-            objectiveVar.setDateStart(queryDocumentSnapshotVar.getData().get("dateStart").toString());
-            objectiveVar.setDateEnd(queryDocumentSnapshotVar.getData().get("dateEnd").toString());
-            objectiveVar.setKeyResultList(keyResultService.getKeyResultListById(queryDocumentSnapshotVar));
-            objectiveVar.setProgressTracker(Integer.parseInt(queryDocumentSnapshotVar.getData().get("progressTracker").toString()));
-            //objectiveVar.setState(queryDocumentSnapshotVar.getData().get("state").toString());
-            //objectiveVar.setType(queryDocumentSnapshotVar.getData().get("type").toString());
-            objectiveList.add(objectiveVar);
+            objectiveList.add(setObjectiveFromDocument(queryDocumentSnapshotVar));
         }
         return objectiveList;
     }
@@ -192,8 +163,10 @@ public class ObjectiveService {
         }
         return check;
     }
-    public void incrementProgressTracker(String id) throws ExecutionException, InterruptedException {
+    public void incrementProgressTracker(String id, String day,long value, String keyId) throws ExecutionException, InterruptedException {
         Objective objective=this.getObjective(id);
+        checkService.checkDayByObjective(id,day);
+        keyValueService.saveValueByDay(id, day, value, keyId);
         objective.setProgressTracker(objective.getProgressTracker()+1);
         ObjectiveEntity objectiveEntity=this.transformNormalToEntity(objective);
         updateObjectiveEntity(objectiveEntity);
@@ -231,12 +204,30 @@ public class ObjectiveService {
         }
         updateObjectiveEntity(this.transformNormalToEntity(objective));
     }
-    public boolean checkDailyObjective(String id) throws ExecutionException, InterruptedException {
+    public boolean checkDailyObjective(String id, String day,long value, String keyId) throws ExecutionException, InterruptedException {
         boolean check=this.areAllTheKeyResultsChecked(id);
         if(check){
-            this.incrementProgressTracker(id);
+            this.incrementProgressTracker(id, day, value, keyId);
             this.isObjectiveCompleted(id);
         }
         return check;
+    }
+    public Objective setObjectiveFromDocument(DocumentSnapshot documentSnapshot) throws ExecutionException, InterruptedException{
+        Objective objective = new Objective();
+        if(documentSnapshot.exists()){
+            objective.setId(documentSnapshot.getId());
+            objective.setName(documentSnapshot.getData().get("name").toString());
+            objective.setUserId(documentSnapshot.getData().get("userId").toString());
+            objective.setType(documentSnapshot.getData().get("type").toString());
+            objective.setDateStart(documentSnapshot.getData().get("dateStart").toString());
+            objective.setDateEnd(documentSnapshot.getData().get("dateEnd").toString());
+            objective.setState(documentSnapshot.getData().get("state").toString());
+            objective.setCheckList(checkService.getAllChecksFromObjective(objective.getId()));
+            objective.setKeyResultList(keyResultService.getAllKeyResultsFromObjective(objective.getId()));
+            objective.setProgressTracker(Integer.parseInt(documentSnapshot.getData().get("progressTracker").toString()));
+            objective.setEnable((Boolean) documentSnapshot.getData().get("enable"));
+            return objective;
+        }
+        return null;
     }
 }

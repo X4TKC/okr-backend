@@ -7,7 +7,6 @@ import com.google.cloud.Timestamp;
 import java.util.Date;
 import java.util.List;
 public class Objective {
-
     private String id;
     private String name;
     private List<KeyResult> keyResultList;
@@ -18,7 +17,7 @@ public class Objective {
     private String type;
     private String state;
     private int progressTracker;
-
+    private List<Check> checkList;
     public Objective() {
     }
     public Objective(String id, String name, List<KeyResult> keyResultList, String dateStart, String dateEnd, String userId) {
@@ -109,5 +108,12 @@ public class Objective {
 
     public void setProgressTracker(int progressTracker) {
         this.progressTracker = progressTracker;
+    }
+    public List<Check> getCheckList() {
+        return checkList;
+    }
+
+    public void setCheckList(List<Check> checkList) {
+        this.checkList = checkList;
     }
 }

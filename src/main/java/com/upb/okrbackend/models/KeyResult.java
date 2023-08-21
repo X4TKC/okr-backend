@@ -12,8 +12,9 @@ public class KeyResult {
     private String action;
     private String measurement;
     private boolean check;
-
-
+    private boolean isIncreasing;
+    private String day;
+    private long value;
 
     public String getId() {
         return id;
@@ -55,11 +56,38 @@ public class KeyResult {
         this.measurement = measurement;
     }
 
+    public void setCheck(boolean check) {
+        this.check = check;
+    }
+
+    public boolean isCheck() {
+        return check;
+    }
     public boolean getCheck() {
         return check;
     }
 
-    public void setCheck(boolean check) {
-        this.check = check;
+    public boolean isIncreasing() {
+        return isIncreasing;
+    }
+
+    public void setIncreasing(boolean increasing) {
+        isIncreasing = increasing;
+    }
+
+    public String getDay() {
+        return day;
+    }
+
+    public void setDay(String day) {
+        this.day = day;
+    }
+
+    public long getValue() {
+        return value;
+    }
+
+    public void setValue(long value) {
+        this.value = value;
     }
 }
