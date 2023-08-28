@@ -10,9 +10,12 @@ import com.upb.okrbackend.models.KeyResult;
 import com.upb.okrbackend.models.Objective;
 import org.springframework.stereotype.Service;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
@@ -63,8 +66,10 @@ public class CheckService {
     public void addCheckToObjective(String id, String objectiveId) throws ExecutionException, InterruptedException {
         DocumentSnapshot documentSnapshotObjective = dbFirestore.collection("Objective").document(objectiveId).get().get();
         List<DocumentReference> documentReferenceListCheck = (List<DocumentReference>) documentSnapshotObjective.getData().get("checkList");
+        List<DocumentReference> documentReferenceListKeyResult = (List<DocumentReference>) documentSnapshotObjective.getData().get("keyResultList");
         documentReferenceListCheck.add(dbFirestore.collection(collection).document(id));
         ObjectiveEntity objectiveEntity = new ObjectiveEntity();
+        objectiveEntity.setKeyResultList(documentReferenceListKeyResult);
         objectiveEntity.setCheckList(documentReferenceListCheck);
         objectiveEntity.setId(documentSnapshotObjective.getId());
         objectiveEntity.setName(documentSnapshotObjective.getData().get("name").toString());
@@ -80,6 +85,16 @@ public class CheckService {
     public List<Check> getAllChecksFromObjective(String objectiveId) throws ExecutionException, InterruptedException {
         List<QueryDocumentSnapshot> queryDocumentSnapshotList = dbFirestore.collection(collection).get().get().getDocuments();
         List<QueryDocumentSnapshot> queryDocumentSnapshot=queryDocumentSnapshotList.stream().filter(a-> a.getData().get("objectiveId").equals(objectiveId)).toList();
+        List<Check> checkList = new ArrayList<>();
+        for (QueryDocumentSnapshot queryDocumentSnapshotVar:queryDocumentSnapshot
+        ) {
+            checkList.add(setCheckFromDocument(queryDocumentSnapshotVar));
+        }
+        return checkList;
+    }
+    public List<Check> getAllChecksFromKeyResult(String keyResultId) throws ExecutionException, InterruptedException {
+        List<QueryDocumentSnapshot> queryDocumentSnapshotList = dbFirestore.collection(collection).get().get().getDocuments();
+        List<QueryDocumentSnapshot> queryDocumentSnapshot=queryDocumentSnapshotList.stream().filter(a-> a.getData().get("keyResultId").equals(keyResultId)).toList();
         List<Check> checkList = new ArrayList<>();
         for (QueryDocumentSnapshot queryDocumentSnapshotVar:queryDocumentSnapshot
         ) {
@@ -111,7 +126,8 @@ public class CheckService {
         if(documentSnapshot.exists()){
             check.setId(documentSnapshot.getId());
             check.setObjectiveId(Objects.requireNonNull(documentSnapshot.getData()).get("objectiveId").toString());
-            check.setKeyResultId(documentSnapshot.getData().get("objectiveId").toString());
+            Object var=documentSnapshot.getData().get("keyResultId");
+            check.setKeyResultId(var!=null?documentSnapshot.getData().get("keyResultId").toString():null);
             check.setCheckDate(documentSnapshot.getData().get("checkDate").toString());
             check.setChecked((Boolean) documentSnapshot.getData().get("checked"));
             check.setValue(Long.parseLong(documentSnapshot.getData().get("value").toString()));
@@ -120,12 +136,13 @@ public class CheckService {
         return null;
     }
     public List<Check> generateAllTheChecksBetweenDates(String startDate, String endDate, String id) throws ExecutionException, InterruptedException {
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         LocalDate start = LocalDate.parse(startDate,dtf);
         LocalDate end  = LocalDate.parse(endDate,dtf);
         long diffInDays = start.datesUntil(end).count();
-        List<LocalDate> listOfDates = start.datesUntil(end)
-                .collect(Collectors.toList());
+        List<LocalDate> listOfDates = new ArrayList<>(start.datesUntil(end)
+                .toList());
+        listOfDates.add(end);
         List<Check> checkList = new ArrayList<>();
         for (LocalDate localdate: listOfDates
              ) {
@@ -139,10 +156,50 @@ public class CheckService {
         }
         return checkList;
     }
-    public void checkDayByObjective(String id, String day) throws ExecutionException, InterruptedException {
-        List<Check> checkList=getAllChecksFromObjective(id);
-        Check check=checkList.stream().filter(a-> a.getCheckDate().equals(day)).findFirst().orElse(null);
-        check.setChecked(true);
-        updateCheck(check);
+    public List<Check> generateAllTheChecksBetweenDatesAndAddKeyResultId(String startDate, String endDate, String id,String keyId) throws ExecutionException, InterruptedException {
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate start = LocalDate.parse(startDate,dtf);
+        LocalDate end  = LocalDate.parse(endDate,dtf);
+        List<LocalDate> listOfDates = new ArrayList<>(start.datesUntil(end)
+                .toList());
+        listOfDates.add(end);
+        List<Check> checkList = new ArrayList<>();
+        for (LocalDate localdate: listOfDates
+        ) {
+            Check check = new Check();
+            check.setCheckDate(String.valueOf(localdate));
+            check.setObjectiveId(id);
+            check.setKeyResultId(keyId);
+            check.setChecked(false);
+            createCheck(check);
+            checkList.add(check);
+        }
+        return checkList;
+    }
+    public void checkDayByObjective(String keyId, String day, long value) throws ExecutionException, InterruptedException {
+        List<Check> checkList=getAllChecksFromKeyResult(keyId);
+        String formatDay= day.substring(0,10);
+        Check check=checkList.stream().filter(a-> a.getCheckDate().equals(formatDay)).findFirst().orElse(null);
+        if (check != null) {
+            check.setChecked(true);
+            check.setValue(value);
+            updateCheck(check);
+        }
+    }
+
+    public void addKeyResultToCheckList(String keyId, String objId,String dateStart, String dateEnd) throws ExecutionException, InterruptedException {
+        List<Check> checkList=getAllChecksFromObjective(objId);
+        int counter=0;
+        for (Check check: checkList
+             ) {
+            if(check.getKeyResultId()==null){
+                check.setKeyResultId(keyId);
+                updateCheck(check);
+                counter++;
+            }
+        }
+        if (counter == 0) {
+            generateAllTheChecksBetweenDatesAndAddKeyResultId(dateStart,dateEnd,objId,keyId);
+        }
     }
 }

@@ -14,6 +14,7 @@ public class KeyResult {
     private boolean check;
     private boolean isIncreasing;
     private String day;
+    private String lastDay;
     private long value;
 
     public String getId() {
@@ -63,9 +64,7 @@ public class KeyResult {
     public boolean isCheck() {
         return check;
     }
-    public boolean getCheck() {
-        return check;
-    }
+
 
     public boolean isIncreasing() {
         return isIncreasing;

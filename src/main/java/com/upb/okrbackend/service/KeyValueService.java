@@ -2,6 +2,7 @@ package com.upb.okrbackend.service;
 
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
+import com.google.firebase.cloud.FirestoreClient;
 import com.upb.okrbackend.models.Check;
 import com.upb.okrbackend.models.KeyValue;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,12 @@ import java.util.concurrent.ExecutionException;
 public class KeyValueService {
     private Firestore dbFirestore;
     private String collection="KeyValue";
+    public KeyValueService(){
+        this.dbFirestore = FirestoreClient.getFirestore();
+    }
+    public KeyValueService(Firestore dbFirestore){
+        this.dbFirestore=dbFirestore;
+    }
     public void saveValueByDay(String objectiveId, String day, long value, String keyId) throws ExecutionException, InterruptedException {
         KeyValue keyValue=setKeyValue(objectiveId,day,value,keyId);
         createKeyValue(keyValue);
@@ -63,16 +70,22 @@ public class KeyValueService {
     }
     public List<KeyValue> getAllKeyValueByKeyId(String keyId) throws ExecutionException, InterruptedException {
         List<QueryDocumentSnapshot> queryDocumentSnapshotList = dbFirestore.collection(collection).get().get().getDocuments();
-        List<QueryDocumentSnapshot> queryDocumentSnapshot=queryDocumentSnapshotList.stream().filter(a-> a.getData().get("keyId").equals(keyId)).toList();
-        List<KeyValue> keyValueList = new ArrayList<>();
-        for (QueryDocumentSnapshot queryDocumentSnapshotVar:queryDocumentSnapshot
-        ) {
-            keyValueList.add(setKeyValueFromDocument(queryDocumentSnapshotVar));
+        if(queryDocumentSnapshotList.size()>0) {
+            List<QueryDocumentSnapshot> queryDocumentSnapshot = queryDocumentSnapshotList.stream().filter(a -> a.getData().get("keyId").equals(keyId)).toList();
+            List<KeyValue> keyValueList = new ArrayList<>();
+            for (QueryDocumentSnapshot queryDocumentSnapshotVar : queryDocumentSnapshot
+            ) {
+                keyValueList.add(setKeyValueFromDocument(queryDocumentSnapshotVar));
+            }
+            return keyValueList;
         }
-        return keyValueList;
+        return new ArrayList<>();
     }
     public List<KeyValue> getAllKeyValueByObjectiveId(String objectiveId) throws ExecutionException, InterruptedException {
         List<QueryDocumentSnapshot> queryDocumentSnapshotList = dbFirestore.collection(collection).get().get().getDocuments();
+        if(queryDocumentSnapshotList.size()>0){
+
+
         List<QueryDocumentSnapshot> queryDocumentSnapshot=queryDocumentSnapshotList.stream().filter(a-> a.getData().get("objectiveId").equals(objectiveId)).toList();
         List<KeyValue> keyValueList = new ArrayList<>();
         for (QueryDocumentSnapshot queryDocumentSnapshotVar:queryDocumentSnapshot
@@ -80,6 +93,8 @@ public class KeyValueService {
             keyValueList.add(setKeyValueFromDocument(queryDocumentSnapshotVar));
         }
         return keyValueList;
+        }
+        return new ArrayList<>();
     }
 
     public void deleteAllKeyValueFromObjective(String id) throws ExecutionException, InterruptedException {

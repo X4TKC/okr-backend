@@ -20,13 +20,18 @@ public class Objective {
     private List<Check> checkList;
     public Objective() {
     }
-    public Objective(String id, String name, List<KeyResult> keyResultList, String dateStart, String dateEnd, String userId) {
+    public Objective(String id, String name, List<KeyResult> keyResultList, String dateStart, String dateEnd, String userId, List<Check> checkList, String type, String state, int progressTracker, boolean enable) {
         this.id = id;
         this.name = name;
         this.keyResultList = keyResultList;
         this.dateStart = dateStart;
         this.dateEnd = dateEnd;
         this.userId = userId;
+        this.checkList=checkList;
+        this.state=state;
+        this.type=type;
+        this.progressTracker=progressTracker;
+        this.enable=enable;
     }
 
     public String getId() {

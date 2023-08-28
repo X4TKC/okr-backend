@@ -10,6 +10,7 @@ import com.upb.okrbackend.models.User;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
+import java.text.ParseException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
@@ -41,7 +42,7 @@ public class UserService {
             throw new OkrExceptionErrors("User already created");
         }
     }
-    public User getUser(String id) throws ExecutionException, InterruptedException {
+    public User getUser(String id) throws ExecutionException, InterruptedException, ParseException {
         DocumentReference documentReference = dbFirestore.collection(collection).document(id);
         ApiFuture<DocumentSnapshot> future = documentReference.get();
         DocumentSnapshot document = future.get();

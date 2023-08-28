@@ -7,6 +7,8 @@ import com.upb.okrbackend.models.User;
 import com.upb.okrbackend.service.UserService;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+
+import java.text.ParseException;
 import java.util.concurrent.ExecutionException;
 
 @RequestMapping("/api/User")
@@ -20,7 +22,7 @@ public class UserController {
         this.userService = userService;
     }
     @GetMapping(value = "/get")
-    public User getUser(@RequestParam String id) throws ExecutionException, InterruptedException {
+    public User getUser(@RequestParam String id) throws ExecutionException, InterruptedException, ParseException {
         return userService.getUser(id);
     }
     @GetMapping(value = "/getByEmail")
