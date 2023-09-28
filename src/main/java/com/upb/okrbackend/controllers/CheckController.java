@@ -24,7 +24,7 @@ public class CheckController {
     }
     @GetMapping(value = "/getAllFrom")
     public List<Check> getAllChecksFromKeyResult(@RequestParam String id) throws ExecutionException, InterruptedException {
-        return checkService.getAllChecksFromObjective(id);
+        return checkService.getAllChecksFromKeyResult(id);
     }
     @PostMapping(value = "/create")
     public String createCheck(@RequestBody Check check) throws ExecutionException, InterruptedException {

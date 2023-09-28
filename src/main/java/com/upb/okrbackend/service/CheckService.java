@@ -94,7 +94,8 @@ public class CheckService {
     }
     public List<Check> getAllChecksFromKeyResult(String keyResultId) throws ExecutionException, InterruptedException {
         List<QueryDocumentSnapshot> queryDocumentSnapshotList = dbFirestore.collection(collection).get().get().getDocuments();
-        List<QueryDocumentSnapshot> queryDocumentSnapshot=queryDocumentSnapshotList.stream().filter(a-> a.getData().get("keyResultId").equals(keyResultId)).toList();
+        System.out.println(queryDocumentSnapshotList.size());
+        List<QueryDocumentSnapshot> queryDocumentSnapshot=queryDocumentSnapshotList.stream().filter(a-> a.getData().get("keyResultId") != null && a.getData().get("keyResultId").equals(keyResultId)).toList();
         List<Check> checkList = new ArrayList<>();
         for (QueryDocumentSnapshot queryDocumentSnapshotVar:queryDocumentSnapshot
         ) {
@@ -148,7 +149,6 @@ public class CheckService {
              ) {
             Check check = new Check();
             check.setCheckDate(String.valueOf(localdate));
-            //TODO seems that i need to set the value of check when i checked the keyResult
             check.setObjectiveId(id);
             check.setChecked(false);
             createCheck(check);
